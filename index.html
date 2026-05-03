@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ADCOPY.AI — Powered by Claude</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0A0A0F; color: #E8E8F0; font-family: 'Courier New', monospace; min-height: 100vh; }
+  
+  header { background: #0D0D15; border-bottom: 1px solid #1E1E2E; padding: 20px 32px; display: flex; align-items: center; gap: 12px; }
+  .logo { width: 36px; height: 36px; background: linear-gradient(135deg, #7C3AED, #2563EB); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+  .logo-text { font-size: 16px; font-weight: 700; letter-spacing: 2px; }
+  .logo-sub { font-size: 10px; color: #555; letter-spacing: 1px; }
+
+  .container { max-width: 900px; margin: 0 auto; padding: 32px 24px; }
+
+  label { font-size: 10px; letter-spacing: 2px; color: #555; display: block; margin-bottom: 8px; }
+  
+  input, textarea, select {
+    width: 100%; padding: 12px 14px;
+    background: #0D0D15; border: 1px solid #1E1E2E;
+    border-radius: 6px; color: #E8E8F0;
+    font-size: 13px; font-family: inherit;
+    outline: none; transition: border-color 0.2s;
+  }
+  input:focus, textarea:focus { border-color: #7C3AED; }
+  textarea { resize: none; }
+
+  .field { margin-bottom: 16px; }
+
+  .platforms { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 24px; }
+  .platform-btn {
+    padding: 10px 20px; border-radius: 6px; cursor: pointer;
+    font-size: 12px; font-family: inherit; letter-spacing: 1px;
+    transition: all 0.2s; background: #0D0D15;
+  }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 28px; }
+
+  .btn-generate {
+    width: 100%; padding: 16px;
+    background: linear-gradient(135deg, #7C3AED, #2563EB);
+    border: none; border-radius: 8px; color: #FFF;
+    font-size: 13px; font-family: inherit; font-weight: 700;
+    letter-spacing: 3px; cursor: pointer; margin-bottom: 32px;
+  }
+  .btn-generate:disabled { background: #1E1E2E; color: #555; cursor: not-allowed; }
+
+  .loading { text-align: center; padding: 40px; color: #555; display: none; }
+  .spinner { font-size: 28px; display: inline-block; animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .results { display: none; }
+  .results-label { font-size: 10px; letter-spacing: 2px; color: #555; margin-bottom: 20px; }
+
+  .variant-card { background: #0D0D15; border: 1px solid #1E1E2E; border-radius: 10px; overflow: hidden; margin-bottom: 16px; }
+  .variant-header { padding: 14px 20px; border-bottom: 1px solid #1E1E2E; display: flex; justify-content: space-between; align-items: center; background: #0A0A12; }
+  .variant-name { font-size: 11px; font-weight: 700; letter-spacing: 2px; color: #7C3AED; }
+  .btn-copy-all { background: none; border: 1px solid #1E1E2E; color: #555; padding: 4px 12px; border-radius: 4px; font-size: 10px; cursor: pointer; font-family: inherit; }
+  .variant-body { padding: 16px 20px; }
+  .element-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding: 10px 0; border-bottom: 1px solid #111120; }
+  .element-row:last-of-type { border-bottom: none; }
+  .element-label { font-size: 9px; letter-spacing: 2px; color: #444; margin-bottom: 4px; }
+  .element-content { font-size: 14px; color: #E8E8F0; line-height: 1.5; }
+  .btn-copy { background: none; border: 1px solid #1E1E2E; color: #444; padding: 3px 8px; border-radius: 4px; font-size: 9px; cursor: pointer; font-family: inherit; flex-shrink: 0; }
+  .tip { margin-top: 14px; padding: 10px 14px; background: #0A0A12; border-left: 2px solid #7C3AED; border-radius: 4px; font-size: 11px; color: #888; line-height: 1.5; }
+
+  .error { padding: 16px; background: #1A0A0A; border: 1px solid #5C1A1A; border-radius: 8px; color: #FF6B6B; font-size: 13px; display: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">⚡</div>
+  <div>
+    <div class="logo-text">ADCOPY.AI</div>
+    <div class="logo-sub">POWERED BY CLAUDE</div>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- Platform -->
+  <label>SELECT PLATFORM</label>
+  <div class="platforms" id="platforms">
+    <button class="platform-btn active" data-id="google" style="border:1px solid #4285F4;color:#4285F4;background:#4285F418">Google Ads</button>
+    <button class="platform-btn" data-id="meta" style="border:1px solid #1E1E2E;color:#666">Meta Ads</button>
+    <button class="platform-btn" data-id="linkedin" style="border:1px solid #1E1E2E;color:#666">LinkedIn Ads</button>
+    <button class="platform-btn" data-id="instagram" style="border:1px solid #1E1E2E;color:#666">Instagram Ads</button>
+  </div>
+
+  <div class="field">
+    <label>PRODUCT / SERVICE</label>
+    <textarea id="product" rows="2" placeholder="e.g. Electrical insulating mats for industrial safety"></textarea>
+  </div>
+
+  <div class="field">
+    <label>TARGET AUDIENCE</label>
+    <textarea id="audience" rows="2" placeholder="e.g. Safety managers at power utilities & EPC contractors"></textarea>
+  </div>
+
+  <div class="field">
+    <label>UNIQUE SELLING POINT</label>
+    <textarea id="usp" rows="2" placeholder="e.g. IEC 61111 certified, exports to 65+ countries"></textarea>
+  </div>
+
+  <div class="grid2">
+    <div>
+      <label>TONE</label>
+      <select id="tone">
+        <option>Professional</option>
+        <option>Urgent</option>
+        <option>Friendly</option>
+        <option>Bold</option>
+        <option>Luxury</option>
+        <option>Trust-building</option>
+      </select>
+    </div>
+    <div>
+      <label>CAMPAIGN GOAL</label>
+      <select id="goal">
+        <option>Lead Generation</option>
+        <option>Brand Awareness</option>
+        <option>Product Sales</option>
+        <option>Website Traffic</option>
+      </select>
+    </div>
+  </div>
+
+  <button class="btn-generate" id="generateBtn" onclick="generate()">⚡ GENERATE AD COPY</button>
+
+  <div class="loading" id="loading">
+    <div class="spinner">◌</div>
+    <div style="font-size:11px;letter-spacing:2px;margin-top:12px">CLAUDE IS WRITING YOUR ADS...</div>
+  </div>
+
+  <div class="error" id="error"></div>
+  <div class="results" id="results"></div>
+
+</div>
+
+<script>
+let selectedPlatform = 'google';
+const platformColors = { google: '#4285F4', meta: '#0866FF', linkedin: '#0A66C2', instagram: '#E1306C' };
+const platformNames = { google: 'Google Ads', meta: 'Meta Ads', linkedin: 'LinkedIn Ads', instagram: 'Instagram Ads' };
+
+document.querySelectorAll('.platform-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    selectedPlatform = btn.dataset.id;
+    document.querySelectorAll('.platform-btn').forEach(b => {
+      const c = platformColors[b.dataset.id];
+      b.style.border = '1px solid #1E1E2E';
+      b.style.color = '#666';
+      b.style.background = '#0D0D15';
+    });
+    const color = platformColors[selectedPlatform];
+    btn.style.border = `1px solid ${color}`;
+    btn.style.color = color;
+    btn.style.background = color + '18';
+  });
+});
+
+async function generate() {
+  const product = document.getElementById('product').value.trim();
+  const audience = document.getElementById('audience').value.trim();
+  const usp = document.getElementById('usp').value.trim();
+  const tone = document.getElementById('tone').value;
+  const goal = document.getElementById('goal').value;
+
+  if (!product || !audience || !usp) { alert('Please fill all fields'); return; }
+
+  document.getElementById('generateBtn').disabled = true;
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('error').style.display = 'none';
+
+  const prompt = `You are an expert ad copywriter. Generate high-converting ad copy.
+Product: ${product}
+Audience: ${audience}
+USP: ${usp}
+Platform: ${selectedPlatform}
+Tone: ${tone}
+Goal: ${goal}
+
+Respond ONLY in this exact JSON format, no extra text:
+{"copies":[{"variant":"Variant A","elements":[{"label":"Headline 1","content":"text","charCount":25},{"label":"Headline 2","content":"text","charCount":25},{"label":"Description","content":"text","charCount":80}],"tip":"optimization tip"},{"variant":"Variant B","elements":[{"label":"Headline 1","content":"text","charCount":25},{"label":"Headline 2","content":"text","charCount":25},{"label":"Description","content":"text","charCount":80}],"tip":"optimization tip"},{"variant":"Variant C","elements":[{"label":"Headline 1","content":"text","charCount":25},{"label":"Headline 2","content":"text","charCount":25},{"label":"Description","content":"text","charCount":80}],"tip":"optimization tip"}]}`;
+
+  try {
+    const res = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 1000, messages: [{ role: 'user', content: prompt }] })
+    });
+    const data = await res.json();
+    const text = data.content?.[0]?.text || '';
+    const parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
+    renderResults(parsed, product);
+  } catch(e) {
+    document.getElementById('error').style.display = 'block';
+    document.getElementById('error').textContent = 'Generation failed. Please try again.';
+  }
+
+  document.getElementById('generateBtn').disabled = false;
+  document.getElementById('loading').style.display = 'none';
+}
+
+function renderResults(data, product) {
+  const container = document.getElementById('results');
+  container.innerHTML = `<div class="results-label">✓ ${data.copies.length} VARIANTS — ${platformNames[selectedPlatform].toUpperCase()}</div>`;
+  
+  data.copies.forEach((variant, vi) => {
+    const allText = variant.elements.map(e => `${e.label}: ${e.content}`).join('\n');
+    const elementsHTML = variant.elements.map((el, ei) => `
+      <div class="element-row">
+        <div style="flex:1">
+          <div class="element-label">${el.label.toUpperCase()}</div>
+          <div class="element-content">${el.content}</div>
+        </div>
+        <button class="btn-copy" onclick="copyText('${el.content.replace(/'/g,"\\'")}', this)">COPY</button>
+      </div>
+    `).join('');
+
+    container.innerHTML += `
+      <div class="variant-card">
+        <div class="variant-header">
+          <div class="variant-name">${variant.variant}</div>
+          <button class="btn-copy-all" onclick="copyText('${allText.replace(/'/g,"\\'")}', this)">COPY ALL</button>
+        </div>
+        <div class="variant-body">
+          ${elementsHTML}
+          <div class="tip">💡 ${variant.tip}</div>
+        </div>
+      </div>
+    `;
+  });
+
+  container.style.display = 'block';
+}
+
+function copyText(text, btn) {
+  navigator.clipboard.writeText(text);
+  const orig = btn.textContent;
+  btn.textContent = '✓';
+  btn.style.color = '#22C55E';
+  setTimeout(() => { btn.textContent = orig; btn.style.color = ''; }, 2000);
+}
+</script>
+</body>
+</html>
